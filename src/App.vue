@@ -1,4 +1,14 @@
 <script setup>
+/**
+ * App.vue — Root orchestrator
+ *
+ * SOLID applied:
+ *  S — App.vue is the single place that wires navigation/actions together.
+ *      Each child component only knows how to render itself.
+ *  O — Adding new sections or rerouting actions requires no changes to child
+ *      components — only this file.
+ *  D — App depends on abstractions (emitted events) not concrete impl.
+ */
 import AppHeader        from './components/layout/AppHeader.vue'
 import HeroBanner       from './components/home/HeroBanner.vue'
 import QuickMenu        from './components/home/QuickMenu.vue'
@@ -7,15 +17,27 @@ import PrivilegesSection from './components/home/PrivilegesSection.vue'
 import RedeemRewards    from './components/home/RedeemRewards.vue'
 import OutletLocation   from './components/home/OutletLocation.vue'
 import referBanner      from './assets/refer_banner.jpeg'
+
+// ── Navigation handlers (Dependency Inversion: components emit, App decides) ──
+function handleQrScan()    { console.log('QR scan') }
+function handleMessages()  { console.log('Messages') }
+function handleMenu()      { console.log('Menu') }
+function handleLearnMore() { console.log('Learn more about levels') }
+function handleRewardsSeeAll()  { console.log('See all rewards') }
+function handleOutletsSeeAll()  { console.log('See all outlets') }
 </script>
 
 <template>
   <div class="min-h-screen bg-white">
-    <AppHeader />
+    <AppHeader
+      @qr-scan="handleQrScan"
+      @messages="handleMessages"
+      @menu="handleMenu"
+    />
     <main class="w-full pb-8">
       <HeroBanner />
       <div class="mt-2 space-y-2">
-        <UserLevelCard />
+        <UserLevelCard @learn-more="handleLearnMore" />
         <QuickMenu />
 
         <!-- Refer Banner -->
@@ -28,13 +50,13 @@ import referBanner      from './assets/refer_banner.jpeg'
         </div>
 
         <!-- Redeem Rewards -->
-        <RedeemRewards />
+        <RedeemRewards @see-all="handleRewardsSeeAll" />
 
         <!-- Privileges -->
         <PrivilegesSection />
 
         <!-- Outlet Location -->
-        <OutletLocation />
+        <OutletLocation @see-all="handleOutletsSeeAll" />
 
       </div>
     </main>

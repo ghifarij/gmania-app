@@ -2,7 +2,7 @@
   <div class="bg-white px-4 py-5 max-w-2xl mx-auto w-full">
     <div class="grid grid-cols-3 gap-y-8 gap-x-2">
       <button
-        v-for="item in menuItems"
+        v-for="item in items"
         :key="item.label"
         class="flex flex-col items-center gap-2 group"
       >
@@ -22,19 +22,22 @@
 </template>
 
 <script setup>
-import orderIcon     from '@/assets/order_icon.jpeg'
-import redeemIcon    from '@/assets/redeem_icon.jpeg'
-import voucherIcon   from '@/assets/voucher_icon.jpeg'
-import privilegeIcon from '@/assets/privilege_icon.jpeg'
-import historyIcon   from '@/assets/history_icon.jpeg'
-import contactIcon   from '@/assets/contact_icon.jpeg'
+/**
+ * QuickMenu
+ *
+ * SOLID applied:
+ *  S — only responsible for rendering the grid of menu items.
+ *  O — items injected via props; new menus need no change to this component.
+ *  I — accepts only the shape it needs: { label, icon }[].
+ *  D — depends on the menuItems data abstraction, not direct asset imports.
+ */
+import { menuItems as defaultMenuItems } from '@/data/menuData'
 
-const menuItems = [
-  { label: 'Order',       icon: orderIcon },
-  { label: 'Redeem',      icon: redeemIcon },
-  { label: 'My Vouchers', icon: voucherIcon },
-  { label: 'Privilege',   icon: privilegeIcon },
-  { label: 'History',     icon: historyIcon },
-  { label: 'Contact Us',  icon: contactIcon },
-]
+defineProps({
+  /** Array of { label: string, icon: string } menu entries */
+  items: {
+    type: Array,
+    default: () => defaultMenuItems,
+  },
+})
 </script>

@@ -2,10 +2,7 @@
   <div class="px-4 pt-5 pb-4 max-w-2xl mx-auto w-full">
 
     <!-- Section Header -->
-    <div class="mb-4">
-      <h2 class="font-bold text-gray-900 text-lg leading-tight">Privileges</h2>
-      <p class="text-[12px] text-gray-600 mt-0.5">Keep discovering our promo and news</p>
-    </div>
+    <SectionHeader title="Privileges" subtitle="Keep discovering our promo and news" />
 
     <!-- 2-column grid -->
     <div class="grid grid-cols-2 gap-5">
@@ -35,21 +32,23 @@
 </template>
 
 <script setup>
-import platinumImg from '@/assets/privilege_platinum.jpeg'
-import goldImg     from '@/assets/privilege_gold.jpeg'
-import thrImg      from '@/assets/privilege_thr.jpeg'
-import poinImg     from '@/assets/privilege_poin.jpeg'
-import jumboImg    from '@/assets/privilege_jumbo.jpeg'
-import benefitImg  from '@/assets/privilege_benefit.jpeg'
-import silverImg   from '@/assets/privilege_silver.jpeg'
+/**
+ * PrivilegesSection
+ *
+ * SOLID applied:
+ *  S — only responsible for rendering the privilege card grid.
+ *  O — privileges injected via props; extend the list without touching this file.
+ *  I — each privilege only needs { title, expires, image }.
+ *  D — depends on privilegesData abstraction, not direct asset imports.
+ */
+import { privileges as defaultPrivileges } from '@/data/privilegesData'
+import SectionHeader from '@/components/shared/SectionHeader.vue'
 
-const privileges = [
-  { title: 'PLATINUM Member 💎', expires: 'Exp. 31 Dec 2024', image: platinumImg },
-  { title: 'GOLD Member ✨',     expires: 'Exp. 31 Dec 2024', image: goldImg     },
-  { title: 'THR Reward 🎉', expires: 'Exp. 31 Dec 2024', image: thrImg      },
-  { title: 'Redeem Point 👋',    expires: 'Exp. 31 Dec 2024', image: poinImg     },
-  { title: 'Sign Up Reward 💰',  expires: 'Exp. 31 Dec 2024', image: jumboImg    },
-  { title: 'Benefit GMania 🍜',  expires: 'Exp. 31 Dec 2024', image: benefitImg  },
-  { title: 'SILVER Member 🥈', expires: 'Exp. 31 Mar 2024', image: silverImg   },
-]
+defineProps({
+  /** Array of { title, expires, image } privilege objects */
+  privileges: {
+    type: Array,
+    default: () => defaultPrivileges,
+  },
+})
 </script>

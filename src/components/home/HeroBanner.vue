@@ -34,40 +34,29 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+/**
+ * HeroBanner
+ *
+ * SOLID applied:
+ *  S — rendering only; timer logic delegated to useCarousel composable.
+ *  O — slide data injected via props; extend slides without touching this file.
+ *  D — depends on useCarousel abstraction, not a concrete timer implementation.
+ */
+import { useCarousel } from '@/composables/useCarousel'
+import { heroBannerImages } from '@/data/heroBannerData'
 
-import hero1 from '@/assets/hero1.jpg'
-import hero2 from '@/assets/hero2.jpg'
-import hero3 from '@/assets/hero3.jpg'
-
-const images = [
-  { src: hero1, alt: 'Hero banner 1' },
-  { src: hero2, alt: 'Hero banner 2' },
-  { src: hero3, alt: 'Hero banner 3' },
-]
-
-const current = ref(0)
-let timer = null
-
-function goTo(index) {
-  current.value = index
-  restartTimer()
-}
-
-function next() {
-  current.value = (current.value + 1) % images.length
-}
-
-function restartTimer() {
-  clearInterval(timer)
-  timer = setInterval(next, 4000)
-}
-
-onMounted(() => {
-  restartTimer()
+const props = defineProps({
+  /** Array of { src, alt } slide objects */
+  images: {
+    type: Array,
+    default: () => heroBannerImages,
+  },
+  /** Auto-advance interval in milliseconds */
+  interval: {
+    type: Number,
+    default: 4000,
+  },
 })
 
-onUnmounted(() => {
-  clearInterval(timer)
-})
+const { current, goTo } = useCarousel(props.images.length, props.interval)
 </script>
