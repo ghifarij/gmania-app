@@ -10,6 +10,10 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci
 
+# Accept build argument and set as environment variable
+ARG VITE_USE_MOCK
+ENV VITE_USE_MOCK=$VITE_USE_MOCK
+
 # Copy project files and build
 COPY . .
 RUN npm run build

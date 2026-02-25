@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - VITE_USE_MOCK=true
     container_name: gmania-app
     ports:
       - "8080:80"
