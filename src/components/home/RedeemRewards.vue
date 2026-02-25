@@ -7,8 +7,28 @@
       <SeeAllButton class="mt-1" @click="$emit('see-all')" />
     </div>
 
+    <!-- Loading skeleton: horizontal scroll of reusable card items -->
+    <div v-if="loading" class="px-4">
+      <div class="overflow-x-auto scrollbar-hide flex gap-3 pb-2">
+        <div
+          v-for="n in 3"
+          :key="n"
+          class="flex-shrink-0 w-[40vw] sm:w-40"
+        >
+          <SkeletonCardItem
+            image-class="aspect-square rounded-xl"
+            rounded="none"
+            text-padding="mt-6 px-0.5"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Error state -->
+    <FetchError v-else-if="error" extra-class="px-4">Failed to load rewards</FetchError>
+
     <!-- Horizontally scrollable cards -->
-    <div class="px-4">
+    <div v-else class="px-4">
       <div class="overflow-x-auto scrollbar-hide flex gap-3 pb-2">
         <div
           v-for="item in rewards"
@@ -23,7 +43,6 @@
               class="w-full h-full object-contain"
             />
           </div>
-
           <!-- Text outside the card -->
           <div class="mt-6 px-0.5">
             <p class="font-bold text-gray-900 text-[13px] leading-snug">{{ item.name }}</p>
@@ -40,22 +59,32 @@
 /**
  * RedeemRewards
  *
- * SOLID applied:
- *  S — only responsible for rendering the reward card list.
- *  O — rewards injected via props; add new rewards without modifying this file.
- *  I — only consumes { name, points, image } from each reward object.
- *  D — depends on rewardsData abstraction, not direct asset imports.
+ * Fetches redeemable rewards from GET /api/rewards via the shared axios instance.
+ * Skeleton uses the shared SkeletonCardItem; error uses the shared FetchError.
  */
-import { rewards as defaultRewards } from '@/data/rewardsData'
-import SectionHeader from '@/components/shared/SectionHeader.vue'
-import SeeAllButton  from '@/components/shared/SeeAllButton.vue'
+import { ref, onMounted } from 'vue'
+import apiClient        from '@/plugins/axios'
+import SectionHeader    from '@/components/shared/SectionHeader.vue'
+import SeeAllButton     from '@/components/shared/SeeAllButton.vue'
+import SkeletonCardItem from '@/components/shared/SkeletonCardItem.vue'
+import FetchError       from '@/components/shared/FetchError.vue'
 
-defineProps({
-  /** Array of { name, points, image } reward objects */
-  rewards: {
-    type: Array,
-    default: () => defaultRewards,
-  },
+// ── State ─────────────────────────────────────────────────────────────────────
+const rewards = ref([])
+const loading = ref(true)
+const error   = ref(null)
+
+// ── Data fetching ─────────────────────────────────────────────────────────────
+onMounted(async () => {
+  try {
+    const { data } = await apiClient.get('/rewards')
+    rewards.value  = data
+  } catch (err) {
+    console.error('[RedeemRewards] Failed to load rewards:', err)
+    error.value = err
+  } finally {
+    loading.value = false
+  }
 })
 
 defineEmits(['see-all'])

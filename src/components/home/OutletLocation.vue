@@ -4,8 +4,23 @@
     <!-- Section Header -->
     <SectionHeader title="Outlet Location" subtitle="Explore your options" />
 
+    <!-- Loading skeleton: 3 text-row + divider pairs -->
+    <div v-if="loading" class="space-y-0">
+      <div v-for="n in 3" :key="n">
+        <div class="py-4 space-y-2">
+          <div class="h-3 w-1/3 bg-gray-200 rounded animate-pulse" />
+          <div class="h-3 w-2/3 bg-gray-200 rounded animate-pulse" />
+          <div class="h-3 w-16 bg-gray-200 rounded animate-pulse" />
+        </div>
+        <div class="h-px bg-gray-200 w-full" />
+      </div>
+    </div>
+
+    <!-- Error state -->
+    <FetchError v-else-if="error">Failed to load outlets</FetchError>
+
     <!-- Location List -->
-    <div>
+    <div v-else>
       <div
         v-for="outlet in outlets"
         :key="outlet.name"
@@ -19,7 +34,6 @@
             <span class="text-[12px]">{{ outlet.distance }} km</span>
           </div>
         </div>
-
         <!-- Divider -->
         <div class="h-px bg-gray-200 w-full"></div>
       </div>
@@ -37,22 +51,34 @@
 /**
  * OutletLocation
  *
- * SOLID applied:
- *  S — only responsible for rendering the outlet list.
- *  O — outlets injected via props; add/remove outlets without touching this file.
- *  I — each outlet only needs { name, address, distance }.
- *  D — depends on outletsData abstraction, not a hardcoded array.
+ * Fetches outlet list from GET /api/outlets via the shared axios instance.
+ * Shows a skeleton list while loading and a shared FetchError on failure.
+ *
+ * Skeleton shape (text rows + divider) is unique to this component,
+ * so it stays inline rather than being extracted further.
  */
-import { outlets as defaultOutlets } from '@/data/outletsData'
+import { ref, onMounted } from 'vue'
+import apiClient     from '@/plugins/axios'
 import SectionHeader from '@/components/shared/SectionHeader.vue'
 import SeeAllButton  from '@/components/shared/SeeAllButton.vue'
+import FetchError    from '@/components/shared/FetchError.vue'
 
-defineProps({
-  /** Array of { name, address, distance } outlet objects */
-  outlets: {
-    type: Array,
-    default: () => defaultOutlets,
-  },
+// ── State ─────────────────────────────────────────────────────────────────────
+const outlets = ref([])
+const loading = ref(true)
+const error   = ref(null)
+
+// ── Data fetching ─────────────────────────────────────────────────────────────
+onMounted(async () => {
+  try {
+    const { data } = await apiClient.get('/outlets')
+    outlets.value  = data
+  } catch (err) {
+    console.error('[OutletLocation] Failed to load outlets:', err)
+    error.value = err
+  } finally {
+    loading.value = false
+  }
 })
 
 defineEmits(['see-all'])

@@ -1,6 +1,25 @@
 <template>
   <div class="bg-white px-4 py-5 max-w-2xl mx-auto w-full">
-    <div class="grid grid-cols-3 gap-y-8 gap-x-2">
+
+    <!-- Loading skeleton: 6 circular icon + label pairs -->
+    <div v-if="loading" class="grid grid-cols-3 gap-y-8 gap-x-2">
+      <div
+        v-for="n in 6"
+        :key="n"
+        class="flex flex-col items-center gap-2"
+      >
+        <!-- Circular image placeholder -->
+        <div class="w-[48px] h-[48px] sm:w-20 sm:h-20 rounded-full bg-gray-200 animate-pulse" />
+        <!-- Label bar -->
+        <div class="h-3 w-12 bg-gray-200 rounded animate-pulse" />
+      </div>
+    </div>
+
+    <!-- Error state -->
+    <FetchError v-else-if="error">Failed to load menu</FetchError>
+
+    <!-- Menu grid -->
+    <div v-else class="grid grid-cols-3 gap-y-8 gap-x-2">
       <button
         v-for="item in items"
         :key="item.label"
@@ -18,6 +37,7 @@
         </span>
       </button>
     </div>
+
   </div>
 </template>
 
@@ -25,19 +45,31 @@
 /**
  * QuickMenu
  *
- * SOLID applied:
- *  S — only responsible for rendering the grid of menu items.
- *  O — items injected via props; new menus need no change to this component.
- *  I — accepts only the shape it needs: { label, icon }[].
- *  D — depends on the menuItems data abstraction, not direct asset imports.
+ * Fetches menu items from GET /api/menus via the shared axios instance.
+ * Shows a skeleton grid while loading and a shared FetchError on failure.
+ *
+ * Skeleton shape (circular icon + label bar) is unique to this component,
+ * so it stays inline rather than being extracted further.
  */
-import { menuItems as defaultMenuItems } from '@/data/menuData'
+import { ref, onMounted } from 'vue'
+import apiClient from '@/plugins/axios'
+import FetchError from '@/components/shared/FetchError.vue'
 
-defineProps({
-  /** Array of { label: string, icon: string } menu entries */
-  items: {
-    type: Array,
-    default: () => defaultMenuItems,
-  },
+// ── State ─────────────────────────────────────────────────────────────────────
+const items   = ref([])
+const loading = ref(true)
+const error   = ref(null)
+
+// ── Data fetching ─────────────────────────────────────────────────────────────
+onMounted(async () => {
+  try {
+    const { data } = await apiClient.get('/menus')
+    items.value    = data
+  } catch (err) {
+    console.error('[QuickMenu] Failed to load menu items:', err)
+    error.value = err
+  } finally {
+    loading.value = false
+  }
 })
 </script>
